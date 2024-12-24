@@ -1,0 +1,103 @@
+from fastapi import FastAPI, HTTPException
+import uvicorn
+from pydantic import BaseModel
+
+app = FastAPI()
+
+data_new = [
+    {
+        'id': 1,
+        'name': 'Корнеева Ульяна Николаевна',
+        'client_type': 'арендодатель',
+        'estate_type': 'квартира',
+        'city': 'Нижний Тагил',
+        'budget': 25000
+    },
+    {
+        'id': 2,
+        'name': 'Николаев Никита Владимирович',
+        'client_type': 'продавец', 'estate_type':
+        'нежилое помещение',
+        'city': 'Каменск-Уральский',
+        'budget': 2000000
+    },
+    {
+        'id': 3,
+        'name': 'Кузнецов Андрей Максимович',
+        'client_type': 'арендодатель',
+        'estate_type': 'земля',
+        'city': 'Екатеринбург',
+        'budget': 25000
+    },
+    {
+        'id': 4,
+        'name': 'Шмелев Григорий Маркович',
+        'client_type': 'продавец',
+        'estate_type': 'квартира',
+        'city': 'Каменск-Уральский',
+        'budget': 3000000
+    },
+    {
+        'id': 5,
+        'name': 'Герасимов Савелий Михайлович',
+        'client_type': 'покупатель',
+        'estate_type': 'дом',
+        'city': 'Нижний Тагил',
+        'budget': 4000000
+    }
+
+]
+
+
+@app.get("/clients")
+def clients_list():
+    return data_new
+
+
+@app.get("/clients/{client_id}")
+def find_client(client_id: int):
+    for client in data_new:
+        if client['id'] == client_id:
+            return client
+    raise HTTPException(status_code=404, detail="Клиент не найден")
+
+
+class NewClient(BaseModel):
+    name: str
+    client_type: str
+    estate_type: str
+    city: str
+    budget: int
+
+
+@app.post('/clients/new')
+def add_client(new_client: NewClient):
+    data_new.append({
+        'id': len(data_new)+1,
+        'name': new_client.name,
+        'client_type': new_client.client_type,
+        'estate_type': new_client.estate_type,
+        'city': new_client.city,
+        'budget': new_client.budget,
+    })
+    return {"message": "Клиент успешно добавлен"}
+
+
+@app.put('/clients/edit/{client_id}')
+def update_client(client_id: int, upd_client: NewClient):
+    data_new['id' == client_id] = {
+        "name": upd_client.name,
+        "client_type": upd_client.client_type,
+        "estate_type": upd_client.estate_type,
+        "city": upd_client.city,
+        "budget": upd_client.budget,
+    }
+    return {"message": "Данные успешно обновлены"}
+
+
+@app.delete('/clients/delete')
+def delete_client(client_id: int):
+    for client in data_new:
+        if client['id'] == client_id:
+            data_new.remove(client)
+    return {"message": "Данные о клиенте удалены"}
